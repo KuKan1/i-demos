@@ -1,0 +1,26 @@
+@startuml
+title server 启动过程
+
+participant    客户端   as    client
+participant    zk
+
+client -> client:start
+activate client
+
+client -> zk:注册(创建客户端临时节点)
+
+client<-- zk:查询所有服务端节点
+
+client -> client:本地缓存
+activate client
+deactivate client
+
+client -> zk:监听服务端节点
+
+client <-- zk:服务端节点掉线/上线
+
+client -> client:整理本地缓存
+activate client
+deactivate client
+deactivate client
+@enduml

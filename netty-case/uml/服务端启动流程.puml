@@ -1,0 +1,11 @@
+@startuml
+title server 启动过程
+
+participant    服务端   as     server
+participant    zk
+
+server -> server:start
+activate server
+
+server -> zk:创建服务端临时节点
+@enduml
