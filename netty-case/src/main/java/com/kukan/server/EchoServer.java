@@ -1,6 +1,7 @@
 package com.kukan.server;
 
 import com.kukan.server.handler.EchoServerHandler;
+import com.utils.NetUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -10,6 +11,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.net.InetSocketAddress;
+import com.registry.Registry;
+import com.registry.ZookeeperRegistry;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 /**
  *
@@ -18,17 +23,15 @@ import java.net.InetSocketAddress;
  */
 public class EchoServer {
     private final int port;
-
-    public EchoServer(int port) {
+    private Registry registry;
+    public EchoServer(int port, Registry registry) {
         this.port = port;
+        this.registry = registry;
     }
 
     public static void main(String[] args) {
-        if (args.length != 1){
-            System.err.println("Usage:"+EchoServer.class.getSimpleName());
-        }
-        int port = Integer.parseInt(args[0]);
-        new EchoServer(port).start();
+
+        new EchoServer(8080,new ZookeeperRegistry("47.93.40.16:2181")).start();
     }
 
     private void start() {
@@ -47,6 +50,14 @@ public class EchoServer {
                 });
 
             ChannelFuture f = bootstrap.bind().sync();
+            f.addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    System.out.println("netty启动成功,开始注册逻辑");
+                    System.out.println(EchoServer.this.port);
+                    registry.register("/xiaomai/server",NetUtils.getLocalHost()+":"+port);
+                }
+            });
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

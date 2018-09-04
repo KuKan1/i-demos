@@ -18,7 +18,7 @@ public class NettyServer {
         bind(serverPort);
     }
 
-    private void bind(int serverPort) {
+    private void bind(final int serverPort) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
